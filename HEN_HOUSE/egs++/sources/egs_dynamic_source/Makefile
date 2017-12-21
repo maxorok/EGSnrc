@@ -1,7 +1,7 @@
 
 ###############################################################################
 #
-#  EGSnrc egs++ makefile to build transformed source
+#  EGSnrc egs++ makefile to build dynamic source
 #  Copyright (C) 2015 National Research Council Canada
 #
 #  This file is part of EGSnrc.
@@ -23,7 +23,7 @@
 #
 #  Author:          Iwan Kawrakow, 2005
 #
-#  Contributors:
+#  Contributors:    Blake Walters
 #
 ###############################################################################
 
@@ -32,7 +32,7 @@ include $(EGS_CONFIG)
 include $(SPEC_DIR)egspp.spec
 include $(SPEC_DIR)egspp_$(my_machine).conf
 
-DEFS = $(DEF1) -DBUILD_TRANSFORMED_SOURCE_DLL
+DEFS = $(DEF1) -DBUILD_DYNAMIC_SOURCE_DLL
 
 library = egs_dynamic_source
 lib_files = egs_dynamic_source
