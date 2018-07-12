@@ -414,6 +414,8 @@ EGS_BaseGeometry::EGS_BaseGeometry(const string &Name) : nreg(0), name(Name),
     has_B_scaling(false), has_Ref_rho(false), bfactor(0), rhoRef(1.0),
     nref(0), debug(false), is_convex(true), bproperty(0), bp_array(0),
     boundaryTolerance(epsilon) {
+
+    halfBoundaryTolerance = boundaryTolerance/2.;
     if (!egs_geometries.size()) {
         egs_geometries.addList(new EGS_GeometryPrivate);
     }
@@ -691,7 +693,9 @@ void EGS_BaseGeometry::setBoundaryTolerance(EGS_Input *i) {
     int err = i->getInput("boundary tolerance", boundaryTolerance);
     if (err > 0) {
         egsWarning("EGS_BaseGeometry::setBoundaryTolerance(): error while reading 'boundary tolerance' input\n");
+        return;
     }
+    halfBoundaryTolerance = boundaryTolerance/2.;
 }
 
 void EGS_BaseGeometry::printInfo() const {
