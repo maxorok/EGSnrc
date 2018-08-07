@@ -1123,6 +1123,12 @@ public:
     virtual EGS_Float getRM() {
         return -1.0;
     };
+
+    //************************************************************
+    // Utility functions for use with ausgab phase space scoring objects
+    //************************************************************
+    virtual void setLatch(int latch) {};
+
 };
 
 #define APP_MAIN(app_name) \
