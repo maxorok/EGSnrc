@@ -44,26 +44,57 @@ int test_unknown_node() {
 int test_isInside() {
     EGS_Vector o(0, 0, 0);
     // single tetrahedron
-    std::vector<EGS_Mesh::Tetrahedron> elt { EGS_Mesh::Tetrahedron(0, 0, 1, 2, 3) };
-    std::vector<EGS_Mesh::Node> nodes {
-        EGS_Mesh::Node(0, 1.0, 1.0, -1.0),
-        EGS_Mesh::Node(1, -1.0, 1.0, -1.0),
-        EGS_Mesh::Node(2, 0.0, -1.0, -1.0),
-        EGS_Mesh::Node(3, 0.0, 0.0, 1.0)
-    };
-    std::vector<EGS_Mesh::Medium> media { EGS_Mesh::Medium(1, "") };
-    EGS_Mesh mesh(elt, nodes, media);
+    {
+        std::vector<EGS_Mesh::Tetrahedron> elt { EGS_Mesh::Tetrahedron(0, 0, 1, 2, 3) };
+        std::vector<EGS_Mesh::Node> nodes {
+            EGS_Mesh::Node(0, 1.0, 1.0, -1.0),
+            EGS_Mesh::Node(1, -1.0, 1.0, -1.0),
+            EGS_Mesh::Node(2, 0.0, -1.0, -1.0),
+            EGS_Mesh::Node(3, 0.0, 0.0, 1.0)
+        };
+        std::vector<EGS_Mesh::Medium> media { EGS_Mesh::Medium(1, "") };
+        EGS_Mesh mesh(elt, nodes, media);
 
-    EGS_Vector in(0, 0, 0);
-    EGS_Vector out(10.0, 10.0, 10.0);
+        EGS_Vector in(0, 0, 0);
+        EGS_Vector out(10.0, 10.0, 10.0);
 
-    if (!mesh.isInside(in)) {
-        std::cerr << "expected point to be inside\n";
-        return 1;
+        if (!mesh.isInside(in)) {
+            std::cerr << "expected point to be inside\n";
+            return 1;
+        }
+        if (mesh.isInside(out)) {
+            std::cerr << "expected point to be outside\n";
+            return 1;
+        }
     }
-    if (mesh.isInside(out)) {
-        std::cerr << "expected point to be outside\n";
-        return 1;
+
+    // two tetrahedrons
+    {
+        std::vector<EGS_Mesh::Tetrahedron> elt {
+            EGS_Mesh::Tetrahedron(0, 0, 1, 2, 3),
+            EGS_Mesh::Tetrahedron(1, 1, 2, 3, 4),
+        };
+        std::vector<EGS_Mesh::Node> nodes {
+            EGS_Mesh::Node(0, 1.0, 1.0, -1.0),
+            EGS_Mesh::Node(1, -1.0, 1.0, -1.0),
+            EGS_Mesh::Node(2, 0.0, -1.0, -1.0),
+            EGS_Mesh::Node(3, 0.0, 0.0, 1.0),
+            EGS_Mesh::Node(4, -1.0, -1.0, 1.0)
+        };
+        std::vector<EGS_Mesh::Medium> media { EGS_Mesh::Medium(1, "") };
+        EGS_Mesh mesh(elt, nodes, media);
+
+        EGS_Vector in(-0.5, -0.25, 0);
+        EGS_Vector out(10.0, 10.0, 10.0);
+
+        if (!mesh.isInside(in)) {
+            std::cerr << "expected point to be inside\n";
+            return 1;
+        }
+        if (mesh.isInside(out)) {
+            std::cerr << "expected point to be outside\n";
+            return 1;
+        }
     }
 
     return 0;
