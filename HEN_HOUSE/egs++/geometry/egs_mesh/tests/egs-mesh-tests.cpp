@@ -29,6 +29,10 @@
         } \
     }
 
+bool approx_eq(double a, double b, double eps = 1e-6) {
+    return (std::abs(a - b) <= eps * (std::abs(a) + std::abs(b) + 1.0));
+}
+
 // we'll use a simple five-element mesh for smoke testing
 static EGS_Mesh test_mesh = [](){
     std::ifstream input("five-tet.msh");
@@ -52,6 +56,20 @@ private:
     EGS_Vector c;
     EGS_Vector d;
 };
+
+std::vector<Tet> get_tetrahedrons(const EGS_Mesh& mesh) {
+    std::vector<Tet> elts;
+    elts.reserve(mesh.num_elements());
+    auto points = mesh.points();
+    for (int i = 0; i < (int)mesh.num_elements(); i++) {
+        elts.emplace_back(Tet(points[4*i], points[4*i+1], points[4*i+2], points[4*i+3]));
+    }
+    return elts;
+}
+
+void print_egsvec(const EGS_Vector& v) {
+    std::cout << "{\n  x: " << v.x << "\n  y: " << v.y << "\n  z: " << v.z << "\n}\n";
+}
 
 int test_unknown_node() {
     std::vector<EGS_Mesh::Tetrahedron> elt { EGS_Mesh::Tetrahedron(0, 0, 1, 2, 100) };
@@ -94,10 +112,9 @@ int test_neighbours() {
 
 int test_isWhere() {
     // test the centroid of each tetrahedron is inside the tetrahedron
-    auto points = test_mesh.points();
-    for (int i = 0; i < (int)test_mesh.num_elements(); i++) {
-        auto tet = Tet(points[4*i], points[4*i+1], points[4*i+2], points[4*i+3]);
-        auto c = tet.centroid();
+    auto elts = get_tetrahedrons(test_mesh);
+    for (int i = 0; i < (int)elts.size(); i++) {
+        auto c = elts.at(i).centroid();
         auto in_tet = test_mesh.isWhere(c);
         if (in_tet != i) {
             std::cerr << "expected point to be in tetrahedron " << i << " got: " << in_tet << "\n";
@@ -113,8 +130,24 @@ int test_isWhere() {
     return 0;
 }
 
-int test_hownear() {
-    return 1;
+int test_hownear_interior() {
+    auto elts = get_tetrahedrons(test_mesh);
+    for (int i = 0; i < (int)elts.size(); i++) {
+        auto c = elts.at(i).centroid();
+        auto dist = test_mesh.hownear(i, c);
+        if (i < 4 && !approx_eq(dist, 0.144338)) {
+            std::cerr << "expected min distance to be 0.144338, got: " << dist << "\n";
+            return 1;
+        } else if (i == 4 && !approx_eq(dist, 0.288675)) {
+            std::cerr << "expected min distance to be 0.288675, got: " << dist << "\n";
+            return 1;
+        } else if (i > 5) {
+            // test specific to five-tet.msh
+            std::cerr << "unknown mesh file for hownear test\n";
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int main() {
@@ -126,7 +159,7 @@ int main() {
     RUN_TEST(test_isWhere());
     RUN_TEST(test_boundary());
     RUN_TEST(test_neighbours());
-    RUN_TEST(test_hownear());
+    RUN_TEST(test_hownear_interior());
 
     std::cerr << num_total - num_failed << " out of " << num_total << " tests passed\n";
     return num_failed;
