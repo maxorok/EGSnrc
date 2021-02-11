@@ -349,7 +349,7 @@ EGS_Mesh::EGS_Mesh(std::vector<EGS_Mesh::Tetrahedron> elements,
     _is_boundary.reserve(_elements.size());
     for (const auto& ns: _neighbours) {
         _is_boundary.push_back(std::any_of(ns.begin(), ns.end(),
-            [](std::size_t n) { return n == mesh_neighbours::NONE; })
+            [](int n) { return n == mesh_neighbours::NONE; })
         );
     }
 

@@ -42,7 +42,7 @@
 namespace mesh_neighbours {
 
 // Magic number for no neighbour.
-constexpr std::size_t NONE = -1;
+constexpr int NONE = -1;
 
 class Tetrahedron {
 public:
@@ -128,14 +128,14 @@ SharedNodes elements_around_nodes(const std::vector<mesh_neighbours::Tetrahedron
 } // namespace internal
 
 // Given a list of tetrahedrons, returns the indices of neighbouring tetrahedrons.
-std::vector<std::array<std::size_t,4>> tetrahedron_neighbours(
+std::vector<std::array<int, 4>> tetrahedron_neighbours(
         const std::vector<mesh_neighbours::Tetrahedron>& elements)
 {
     const std::size_t NUM_FACES = 4;
     const auto shared_nodes = mesh_neighbours::internal::elements_around_nodes(elements);
 
     // initialize neighbour element index vector with "no neighbour" constant
-    std::vector<std::array<std::size_t, 4>> neighbours(elements.size(), {NONE, NONE, NONE, NONE});
+    std::vector<std::array<int, 4>> neighbours(elements.size(), {NONE, NONE, NONE, NONE});
 
     for (std::size_t i = 0; i < elements.size(); i++) {
         auto elt_faces = elements[i].faces();

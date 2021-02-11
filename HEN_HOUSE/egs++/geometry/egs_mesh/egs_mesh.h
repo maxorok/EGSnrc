@@ -128,7 +128,7 @@ public:
     const std::vector<EGS_Mesh::Medium>& materials() const {
         return _materials;
     }
-    const std::vector<std::array<std::size_t, 4>>& neighbours() const {
+    const std::vector<std::array<int, 4>>& neighbours() const {
         return _neighbours;
     }
     const std::vector<bool>& is_boundary() const {
@@ -174,7 +174,7 @@ private:
     std::vector<EGS_Mesh::Node> _nodes;
     std::vector<EGS_Mesh::Medium> _materials;
 
-    std::vector<std::array<std::size_t, 4>> _neighbours;
+    std::vector<std::array<int, 4>> _neighbours;
     const std::string type = "EGS_Mesh";
 };
 
