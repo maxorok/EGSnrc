@@ -402,7 +402,7 @@ int EGS_Mesh::isWhere(const EGS_Vector &x) {
         if (point_outside_of_plane(x, A, B, D, C)) {
             continue;
         }
-        if (point_outside_of_plane(x, B, D, C, A)) {
+        if (point_outside_of_plane(x, B, C, D, A)) {
             continue;
         }
         return i;
@@ -441,7 +441,7 @@ EGS_Float EGS_Mesh::min_interior_face_dist(int ireg, const EGS_Vector& x) {
     maybe_update_min(A, B, C);
     maybe_update_min(A, C, D);
     maybe_update_min(A, B, D);
-    maybe_update_min(B, D, C);
+    maybe_update_min(B, C, D);
 
     return std::sqrt(min2);
 }
