@@ -11,9 +11,10 @@ int test_tetrahedron_face_eq() {
         Tetrahedron b(4, 2, 3, 1);
         auto a_faces = a.faces();
         auto b_faces = b.faces();
-        for (int i = 0; i < 4; i++) {
-            assert(a_faces[i] == b_faces[i]);
-        }
+        assert(a_faces[0] == b_faces[3]);
+        assert(a_faces[1] == b_faces[1]);
+        assert(a_faces[2] == b_faces[2]);
+        assert(a_faces[3] == b_faces[0]);
     }
     // tetrahedrons with three shared nodes have 1 face in common
     {
@@ -21,16 +22,10 @@ int test_tetrahedron_face_eq() {
         Tetrahedron b(5, 2, 3, 1);
         auto a_faces = a.faces();
         auto b_faces = b.faces();
-        Tetrahedron::Face shared_face;
-        int num_shared = 0;
-        for (int i = 0; i < 4; i++) {
-            if (a_faces[i] == b_faces[i]) {
-                num_shared += 1;
-                shared_face = b_faces[i];
-            }
-        }
-        assert(num_shared == 1);
-        assert((shared_face == Tetrahedron::Face {1, 2, 3}));
+        assert(a_faces[0] != b_faces[3]);
+        assert(a_faces[1] != b_faces[1]);
+        assert(a_faces[2] != b_faces[2]);
+        assert(a_faces[3] == b_faces[0]);
     }
     return 0;
 }
