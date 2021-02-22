@@ -131,12 +131,10 @@ public:
     const std::vector<std::array<int, 4>>& neighbours() const {
         return _neighbours;
     }
-    const std::vector<bool>& is_boundary() const {
-        return _is_boundary;
-    }
     const std::vector<EGS_Vector>& points() const {
         return _elt_points;
     }
+    bool is_boundary(int reg) const;
 
     // EGS_BaseGeometry interface
     const std::string& getType() const { return type; }
@@ -167,7 +165,7 @@ private:
         EGS_Float &t, int *newmed, EGS_Vector *normal);
 
     std::vector<EGS_Vector> _elt_points;
-    std::vector<bool> _is_boundary;
+    std::vector<bool> _boundary_faces;
     std::vector<int> _medium_indices;
 
     std::vector<EGS_Mesh::Tetrahedron> _elements;
