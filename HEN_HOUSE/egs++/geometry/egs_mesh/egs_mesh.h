@@ -134,6 +134,17 @@ public:
     const std::vector<EGS_Vector>& points() const {
         return _elt_points;
     }
+    std::vector<EGS_Float> volumes() const {
+        std::vector<EGS_Float> volumes;
+        volumes.reserve(num_elements());
+        for (int i = 0; i < num_elements(); i++) {
+            volumes.push_back(std::abs(
+                (_elt_points[4*i] - _elt_points[4*i+3]) *
+                    ((_elt_points[4*i+1] - _elt_points[4*i+3])
+                        % (_elt_points[4*i+2] - _elt_points[4*i+3]))) / 6.0);
+        }
+        return volumes;
+    }
     bool is_boundary(int reg) const;
 
     // EGS_BaseGeometry interface
