@@ -147,6 +147,12 @@ public:
     }
     bool is_boundary(int reg) const;
 
+    const std::string& filename() const {
+        return _filename;
+    }
+    void setFilename(std::string filename) {
+        _filename = filename;
+    }
     // EGS_BaseGeometry interface
     const std::string& getType() const { return type; }
     bool isInside(const EGS_Vector &x);
@@ -190,6 +196,7 @@ private:
     std::vector<bool> _boundary_faces;
     std::vector<int> _medium_indices;
     std::vector<std::string> _medium_names;
+    std::string _filename;
 
     std::vector<EGS_Mesh::Tetrahedron> _elements;
     std::vector<EGS_Mesh::Node> _nodes;

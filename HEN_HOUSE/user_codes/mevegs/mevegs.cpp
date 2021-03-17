@@ -15,6 +15,7 @@
 #include "egs_mesh.h"
 
 #include <cstdlib>
+#include <fstream>
 using namespace std;
 
 class APP_EXPORT Mevegs_Application : public EGS_AdvancedApplication {
@@ -124,6 +125,9 @@ public:
 
     /*! Output the results of a simulation. */
     void outputResults();
+
+    /*! Write the results to a Gmsh file. */
+    void writeGmsh();
 
     /*! Get the current simulation result.
      This function is called from the run control object in parallel runs
@@ -548,11 +552,33 @@ void Mevegs_Application::outputResults() {
         }
     }
 
+    writeGmsh();
+}
+
+void Mevegs_Application::writeGmsh() {
     EGS_Mesh *mesh = dynamic_cast<EGS_Mesh*>(geometry);
     if (!mesh) {
         egsWarning("\n\n No mesh geometry found, skipping mesh output step\n\n");
         return;
     }
+
+    // copy the input mesh file to make a new output file
+    std::ofstream out("mevegs-results.msh");
+    {
+        auto filename = mesh->filename();
+        if (filename.empty()) {
+            egsWarning("\n\n EGS_Mesh has no filename, skipping mesh output step\n\n");
+            return;
+        }
+        std::ifstream in(filename);
+        if (!in) {
+            egsWarning("\n\n Couldn't open EGS_Mesh input file, skipping mesh output step\n\n");
+            return;
+        }
+        out << in.rdbuf();
+    }
+    // append simulation data
+
     auto vols = mesh->volumes();
     std::cout << "  got " << vols.size() << " volumes\n";
 }
