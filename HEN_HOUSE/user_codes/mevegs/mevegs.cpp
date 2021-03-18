@@ -15,6 +15,7 @@
 #include "egs_mesh.h"
 
 #include <cstdlib>
+#include <cassert>
 #include <fstream>
 using namespace std;
 
@@ -128,6 +129,9 @@ public:
 
     /*! Write the results to a Gmsh file. */
     void writeGmsh();
+
+    /*! Helper function that calculates the results and writes them to an output file. */
+    void writeGmshResults(std::ostream& out, const EGS_Mesh& mesh);
 
     /*! Get the current simulation result.
      This function is called from the run control object in parallel runs
@@ -526,9 +530,9 @@ void Mevegs_Application::outputResults() {
     egsInformation(" Energy fractions\n");
     egsInformation("======================================================\n");
     egsInformation("The first and last items in the following list of energy fractions are the reflected and transmitted energy, respectively. These two values are only meaningful if the source is directed in the positive z-direction. The remaining values are the deposited energy fractions in the regions of the geometry, but notice that the identifying index is the region number offset by 1 (ir+1).");
-    score->reportResults(norm,
-                         "ir+1 | Reflected, deposited, or transmitted energy fraction",false,
-                         "  %d  %12.6e +/- %12.6e %c\n");
+    //score->reportResults(norm,
+    //                     "ir+1 | Reflected, deposited, or transmitted energy fraction",false,
+    //                     "  %d  %12.6e +/- %12.6e %c\n");
     if (nph > 0) {
         if (nph > 1) {
             egsInformation("\n\n======================================================\n");
@@ -577,10 +581,48 @@ void Mevegs_Application::writeGmsh() {
         }
         out << in.rdbuf();
     }
-    // append simulation data
 
-    auto vols = mesh->volumes();
-    std::cout << "  got " << vols.size() << " volumes\n";
+    writeGmshResults(out, *mesh);
+}
+
+namespace {
+// Helper function to append output data to a Gmsh file.
+void appendGmshData(std::ostream& out_file, std::string title, const std::vector<double>& data)
+{
+    // Gmsh's ElementData section is the same for msh versions 2.2 and 4.1
+    out_file << "$ElementData\n"; // header
+    out_file << "1\n" << "\"" << title << "\"\n"; // one string, the view title
+    out_file << "1\n0.0\n"; // one float, the time (dummy 0.0)
+    // three ints, timestep 0, 1 value per elt, number of elts
+    out_file << "3\n0\n1\n" << data.size() << "\n";
+    for (std::size_t i = 0; i < data.size(); i++) {
+        // TODO add element tags to EGS_Mesh
+        out_file << i + 1 << " " << data[i] << "\n";
+    }
+    out_file << "$EndElementData\n"; // footer
+}
+} // anonymous namespace
+
+void Mevegs_Application::writeGmshResults(std::ostream& out, const EGS_Mesh& mesh) {
+    auto n_elts = mesh.num_elements();
+    std::vector<double> e_deps(n_elts);
+    std::vector<double> uncerts(n_elts);
+    // the score array is mesh size + 2, first elt is reflected, last is transmitted
+    // start at 1 to skip reflected energy reflected, stop 1 before end to skip transmitted
+    assert(score->regions() == n_elts + 2);
+    for (int i = 1; i < n_elts + 1; ++i) {
+        double e_dep, uncert;
+        score->currentResult(i, e_dep, uncert);
+        e_deps[i] = e_dep;
+        uncerts[i] = uncert;
+    }
+
+    // append simulation data
+    appendGmshData(out, "Energy deposition per particle [MeV]", e_deps);
+    //appendGmshData(out, "energy fraction per particle", fractions);
+    //appendGmshData(out, "Energy uncertainty [%]", this->uncerts);
+    appendGmshData(out, "Volume [cm^3]", mesh.volumes());
+    //appendGmshData(out, "Density [g/cm^3]", this->getGeometry()->element_densities());
 }
 
 void Mevegs_Application::getCurrentResult(double &sum, double &sum2,
