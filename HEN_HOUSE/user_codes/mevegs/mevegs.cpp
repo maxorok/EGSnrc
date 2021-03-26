@@ -605,16 +605,18 @@ void appendGmshData(std::ostream& out_file, std::string title, const std::vector
 
 void Mevegs_Application::writeGmshResults(std::ostream& out, const EGS_Mesh& mesh) {
     auto n_elts = mesh.num_elements();
-    std::vector<double> e_deps(n_elts);
-    std::vector<double> uncerts(n_elts);
+    std::vector<double> e_deps;
+    std::vector<double> uncerts;
+    e_deps.reserve(n_elts);
+    uncerts.reserve(n_elts);
     // the score array is mesh size + 2, first elt is reflected, last is transmitted
     // start at 1 to skip reflected energy reflected, stop 1 before end to skip transmitted
     assert(score->regions() == n_elts + 2);
     for (int i = 1; i < n_elts + 1; ++i) {
         double e_dep, uncert;
         score->currentResult(i, e_dep, uncert);
-        e_deps[i] = e_dep;
-        uncerts[i] = uncert;
+        e_deps.push_back(e_dep);
+        uncerts.push_back(uncert);
     }
 
     // append simulation data
