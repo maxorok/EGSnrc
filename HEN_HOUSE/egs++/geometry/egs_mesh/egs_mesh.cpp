@@ -501,16 +501,6 @@ int EGS_Mesh::howfar_interior(int ireg, const EGS_Vector &x, const EGS_Vector &u
     const auto& C = _elt_points.at(4*ireg + 2);
     const auto& D = _elt_points.at(4*ireg + 3);
 
-    std::cout << "A "; print_egsvec(A);
-    std::cout << "B "; print_egsvec(B);
-    std::cout << "C "; print_egsvec(C);
-    std::cout << "D "; print_egsvec(D);
-
-    std::cout << "neighbour 0: " << _neighbours[ireg][0] << "\n";
-    std::cout << "neighbour 1: " << _neighbours[ireg][1] << "\n";
-    std::cout << "neighbour 2: " << _neighbours[ireg][2] << "\n";
-    std::cout << "neighbour 3: " << _neighbours[ireg][3] << "\n";
-
     auto update_media_and_normal = [&](const EGS_Vector &A, const EGS_Vector &B,
         const EGS_Vector &C, int new_reg)
     {
@@ -621,9 +611,7 @@ int EGS_Mesh::howfar_exterior(int ireg, const EGS_Vector &x, const EGS_Vector &u
     int min_reg_face = -1;
 
     for (auto i = 0; i < num_elements(); i++) {
-        std::cout << "elt " << i << "\n";
         if (!is_boundary(i)) {
-            std::cout << "not a boundary\n";
             continue;
         }
         auto intersection = closest_boundary_face(i, x, u);
