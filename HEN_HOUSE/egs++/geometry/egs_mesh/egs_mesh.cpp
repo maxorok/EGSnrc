@@ -51,8 +51,8 @@
 // anonymous namespace
 namespace {
 
-void print_egsvec(const EGS_Vector& v) {
-    std::cout << "{\n  x: " << v.x << "\n  y: " << v.y << "\n  z: " << v.z << "\n}\n";
+void print_egsvec(const EGS_Vector& v, std::ostream& out = std::cout) {
+    out << "{\n  x: " << v.x << "\n  y: " << v.y << "\n  z: " << v.z << "\n}\n";
 }
 
 inline EGS_Float dot(const EGS_Vector &x, const EGS_Vector &y) {
@@ -656,11 +656,20 @@ int EGS_Mesh::howfar_exterior(int ireg, const EGS_Vector &x, const EGS_Vector &u
                 std::to_string(min_reg_face));
         }
     }
+    //out << "got min_reg: " << min_reg << "\n";
+    //egsWarning("%s", out.str().c_str());
     return min_reg;
 }
 
 // TODO
 static char EGS_MESH_LOCAL geom_class_msg[] = "createGeometry(Mesh): %s\n";
+
+void EGS_Mesh::printInfo() const {
+    EGS_BaseGeometry::printInfo();
+    std::ostringstream oss;
+    printElement(0, oss);
+    egsInformation(oss.str().c_str());
+}
 
 extern "C" {
     EGS_MESH_EXPORT EGS_BaseGeometry *createGeometry(EGS_Input *input) {
