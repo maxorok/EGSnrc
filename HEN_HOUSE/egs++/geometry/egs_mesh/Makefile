@@ -36,3 +36,7 @@ extra_dep = $(addprefix $(DSOLIBS), $(my_deps))
 include $(SPEC_DIR)egspp_libs.spec
 
 $(make_depend)
+
+.PHONY: clean
+clean:
+	$(REMOVE) $(ABS_DSO)$(libpre)$(library)$(libext) $(DSO2)$(library).$(obje)
