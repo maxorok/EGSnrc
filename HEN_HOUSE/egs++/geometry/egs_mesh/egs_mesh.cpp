@@ -396,20 +396,17 @@ int EGS_Mesh::medium(int ireg) const {
 
 int EGS_Mesh::isWhere(const EGS_Vector &x) {
     for (auto i = 0; i < num_elements(); i++) {
-        const auto& A = _elt_points.at(4*i);
-        const auto& B = _elt_points.at(4*i + 1);
-        const auto& C = _elt_points.at(4*i + 2);
-        const auto& D = _elt_points.at(4*i + 3);
-        if (point_outside_of_plane(x, A, B, C, D)) {
+        const auto& n = element_nodes(i);
+        if (point_outside_of_plane(x, n.A, n.B, n.C, n.D)) {
             continue;
         }
-        if (point_outside_of_plane(x, A, C, D, B)) {
+        if (point_outside_of_plane(x, n.A, n.C, n.D, n.B)) {
             continue;
         }
-        if (point_outside_of_plane(x, A, B, D, C)) {
+        if (point_outside_of_plane(x, n.A, n.B, n.D, n.C)) {
             continue;
         }
-        if (point_outside_of_plane(x, B, C, D, A)) {
+        if (point_outside_of_plane(x, n.B, n.C, n.D, n.A)) {
             continue;
         }
         return i;
@@ -440,15 +437,11 @@ EGS_Float EGS_Mesh::min_interior_face_dist(int ireg, const EGS_Vector& x) {
         }
     };
 
-    const auto& A = _elt_points.at(4*ireg);
-    const auto& B = _elt_points.at(4*ireg + 1);
-    const auto& C = _elt_points.at(4*ireg + 2);
-    const auto& D = _elt_points.at(4*ireg + 3);
-
-    maybe_update_min(A, B, C);
-    maybe_update_min(A, C, D);
-    maybe_update_min(A, B, D);
-    maybe_update_min(B, C, D);
+    const auto& n = element_nodes(ireg);
+    maybe_update_min(n.A, n.B, n.C);
+    maybe_update_min(n.A, n.C, n.D);
+    maybe_update_min(n.A, n.B, n.D);
+    maybe_update_min(n.B, n.C, n.D);
 
     return std::sqrt(min2);
 }
@@ -462,11 +455,9 @@ EGS_Float EGS_Mesh::min_exterior_face_dist(int ireg, const EGS_Vector& x) {
         if (!is_boundary(i)) {
             continue;
         }
-        const auto& A = _elt_points.at(4*i);
-        const auto& B = _elt_points.at(4*i + 1);
-        const auto& C = _elt_points.at(4*i + 2);
-        const auto& D = _elt_points.at(4*i + 3);
-        EGS_Float dis = distance2(x, closest_point_tetrahedron(x, A, B, C, D));
+        const auto& n = element_nodes(i);
+        EGS_Float dis = distance2(x,
+            closest_point_tetrahedron(x, n.A, n.B, n.C, n.D));
         if (dis < min2) {
             min2 = dis;
         }
@@ -490,11 +481,6 @@ int EGS_Mesh::howfar_interior(int ireg, const EGS_Vector &x, const EGS_Vector &u
     EGS_Vector u_norm = u;
     u_norm.normalize();
 
-    const auto& A = _elt_points.at(4*ireg);
-    const auto& B = _elt_points.at(4*ireg + 1);
-    const auto& C = _elt_points.at(4*ireg + 2);
-    const auto& D = _elt_points.at(4*ireg + 3);
-
     auto update_media_and_normal = [&](const EGS_Vector &A, const EGS_Vector &B,
         const EGS_Vector &C, int new_reg)
     {
@@ -513,7 +499,8 @@ int EGS_Mesh::howfar_interior(int ireg, const EGS_Vector &x, const EGS_Vector &u
     };
 
     EGS_Float dist = 1e30;
-    if (triangle_ray_intersection(x, u_norm, A, B, C, dist)) {
+    const auto& n = element_nodes(ireg);
+    if (triangle_ray_intersection(x, u_norm, n.A, n.B, n.C, dist)) {
         // too far away to intersect
         if (dist > t) {
             return ireg;
@@ -521,10 +508,10 @@ int EGS_Mesh::howfar_interior(int ireg, const EGS_Vector &x, const EGS_Vector &u
         t = dist;
         // index 3 = excluding last point D = face ABC
         auto new_reg = _neighbours[ireg][3];
-        update_media_and_normal(A, B, C, new_reg);
+        update_media_and_normal(n.A, n.B, n.C, new_reg);
         return new_reg;
     }
-    if (triangle_ray_intersection(x, u_norm, A, C, D, dist)) {
+    if (triangle_ray_intersection(x, u_norm, n.A, n.C, n.D, dist)) {
         // too far away to intersect
         if (dist > t) {
             return ireg;
@@ -532,10 +519,10 @@ int EGS_Mesh::howfar_interior(int ireg, const EGS_Vector &x, const EGS_Vector &u
         t = dist;
         // index 1 = excluding point B = face ACD
         auto new_reg = _neighbours[ireg][1];
-        update_media_and_normal(A, C, D, new_reg);
+        update_media_and_normal(n.A, n.C, n.D, new_reg);
         return new_reg;
     }
-    if (triangle_ray_intersection(x, u_norm, A, B, D, dist)) {
+    if (triangle_ray_intersection(x, u_norm, n.A, n.B, n.D, dist)) {
         // too far away to intersect
         if (dist > t) {
             return ireg;
@@ -543,17 +530,17 @@ int EGS_Mesh::howfar_interior(int ireg, const EGS_Vector &x, const EGS_Vector &u
         t = dist;
         // index 2 = excluding point C = face ABD
         auto new_reg = _neighbours[ireg][2];
-        update_media_and_normal(A, B, D, new_reg);
+        update_media_and_normal(n.A, n.B, n.D, new_reg);
         return new_reg;
     }
-    if (triangle_ray_intersection(x, u_norm, B, C, D, dist)) {
+    if (triangle_ray_intersection(x, u_norm, n.B, n.C, n.D, dist)) {
         if (dist > t) {
             return ireg;
         }
         t = dist;
         // index 0 = excluding point A = face BCD
         auto new_reg = _neighbours[ireg][0];
-        update_media_and_normal(B, C, D, new_reg);
+        update_media_and_normal(n.B, n.C, n.D, new_reg);
         return new_reg;
     }
 
@@ -580,16 +567,13 @@ EGS_Mesh::Intersection EGS_Mesh::closest_boundary_face(int ireg, const EGS_Vecto
         }
     };
 
-    const auto& A = _elt_points.at(4*ireg);
-    const auto& B = _elt_points.at(4*ireg + 1);
-    const auto& C = _elt_points.at(4*ireg + 2);
-    const auto& D = _elt_points.at(4*ireg + 3);
 
+    const auto& n = element_nodes(ireg);
     // face 0 (BCD), face 1 (ACD) etc.
-    check_face_intersection(0, B, C, D);
-    check_face_intersection(1, A, C, D);
-    check_face_intersection(2, A, B, D);
-    check_face_intersection(3, A, B, C);
+    check_face_intersection(0, n.B, n.C, n.D);
+    check_face_intersection(1, n.A, n.C, n.D);
+    check_face_intersection(2, n.A, n.B, n.D);
+    check_face_intersection(3, n.A, n.B, n.C);
 
     return EGS_Mesh::Intersection(min_dist, closest_face);
 }
@@ -625,15 +609,12 @@ int EGS_Mesh::howfar_exterior(int ireg, const EGS_Vector &x, const EGS_Vector &u
         *newmed = medium(min_reg);
     }
     if (normal) {
-        const auto& A = _elt_points.at(4*ireg);
-        const auto& B = _elt_points.at(4*ireg + 1);
-        const auto& C = _elt_points.at(4*ireg + 2);
-        const auto& D = _elt_points.at(4*ireg + 3);
+        const auto& n = element_nodes(ireg);
         switch(min_reg_face) {
-            case 0: *normal = cross(C - B, D - B); break;
-            case 1: *normal = cross(C - A, D - A); break;
-            case 2: *normal = cross(B - A, D - A); break;
-            case 3: *normal = cross(B - A, C - A); break;
+            case 0: *normal = cross(n.C - n.B, n.D - n.B); break;
+            case 1: *normal = cross(n.C - n.A, n.D - n.A); break;
+            case 2: *normal = cross(n.B - n.A, n.D - n.A); break;
+            case 3: *normal = cross(n.B - n.A, n.C - n.A); break;
             default: throw std::runtime_error("Bad intersection, got face index: " +
                 std::to_string(min_reg_face));
         }

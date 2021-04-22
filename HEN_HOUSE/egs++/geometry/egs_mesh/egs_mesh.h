@@ -222,6 +222,22 @@ private:
         int face_index;
     };
 
+    struct Nodes {
+        const EGS_Vector& A;
+        const EGS_Vector& B;
+        const EGS_Vector& C;
+        const EGS_Vector& D;
+    };
+
+    Nodes element_nodes(int element) const {
+        return Nodes {
+            _elt_points.at(4*element),
+            _elt_points.at(4*element + 1),
+            _elt_points.at(4*element + 2),
+            _elt_points.at(4*element + 3),
+        };
+    }
+
     // `howfar` helper: Determine the closest boundary face intersection
     Intersection closest_boundary_face(int ireg, const EGS_Vector& x, const EGS_Vector& u);
 
