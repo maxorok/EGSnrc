@@ -213,6 +213,9 @@ private:
     int howfar_exterior(int ireg, const EGS_Vector &x, const EGS_Vector &u,
         EGS_Float &t, int *newmed, EGS_Vector *normal);
 
+    // `isWhere` helper method to check if a point x is inside element i
+    bool insideElement(int i, const EGS_Vector &x);
+
     struct Intersection {
         Intersection(EGS_Float dist, int face_index)
             : dist(dist), face_index(face_index) {}

@@ -394,22 +394,28 @@ int EGS_Mesh::medium(int ireg) const {
     return _medium_indices.at(ireg);
 }
 
+bool EGS_Mesh::insideElement(int i, const EGS_Vector &x) {
+    const auto& n = element_nodes(i);
+    if (point_outside_of_plane(x, n.A, n.B, n.C, n.D)) {
+        return false;
+    }
+    if (point_outside_of_plane(x, n.A, n.C, n.D, n.B)) {
+        return false;
+    }
+    if (point_outside_of_plane(x, n.A, n.B, n.D, n.C)) {
+        return false;
+    }
+    if (point_outside_of_plane(x, n.B, n.C, n.D, n.A)) {
+        return false;
+    }
+    return true;
+}
+
 int EGS_Mesh::isWhere(const EGS_Vector &x) {
     for (auto i = 0; i < num_elements(); i++) {
-        const auto& n = element_nodes(i);
-        if (point_outside_of_plane(x, n.A, n.B, n.C, n.D)) {
-            continue;
+        if (insideElement(i, x)) {
+            return i;
         }
-        if (point_outside_of_plane(x, n.A, n.C, n.D, n.B)) {
-            continue;
-        }
-        if (point_outside_of_plane(x, n.A, n.B, n.D, n.C)) {
-            continue;
-        }
-        if (point_outside_of_plane(x, n.B, n.C, n.D, n.A)) {
-            continue;
-        }
-        return i;
     }
     return -1;
 }
