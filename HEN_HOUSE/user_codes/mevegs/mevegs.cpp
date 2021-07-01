@@ -533,6 +533,10 @@ int Mevegs_Application::addState(istream &data) {
 void Mevegs_Application::outputResults() {
     egsInformation("\n\n last case = %d Etot = %g\n",
                    (int)current_case,Etot);
+    writeGmsh();
+    if (nreg > 100) {
+        return;
+    }
     double norm = ((double)current_case)/Etot;
 
     egsInformation("\n\n======================================================\n");
@@ -564,8 +568,6 @@ void Mevegs_Application::outputResults() {
             }
         }
     }
-
-    writeGmsh();
 }
 
 void Mevegs_Application::writeGmsh() {
